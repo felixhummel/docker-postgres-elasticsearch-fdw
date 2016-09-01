@@ -1,7 +1,7 @@
 compose_project_name := pges
+# compose naming conventions
 image_postgres := $(compose_project_name)_postgres
 image_elasticsearch := $(compose_project_name)_elasticsearch
-# docker compose convention
 container_postgres := $(compose_project_name)_postgres_1
 container_elasticsearch := $(compose_project_name)_elasticsearch_1
 # if the containers run, those contain their IP addresses
@@ -18,6 +18,8 @@ psql := PGPASSWORD=foobarbaz psql -h $(ip_postgres) -U postgres
 # ==============
 default: compose
 
+# Basics
+# ======
 # used in ADD clause in Dockerfile
 esfdw:
 	git submodule update --init
@@ -40,31 +42,31 @@ debug:
 
 # Elasticsearch Example Data
 # ==========================
-accounts.zip:
-	test -f accounts.zip || wget 'https://github.com/bly2k/files/blob/master/accounts.zip?raw=true' -O accounts.zip
-accounts.json: accounts.zip
-	test -f accounts.json || unzip accounts.zip
-load_es_example_data: accounts.json
-	curl -XPOST 'http://$(ip_elasticsearch):9200/bank/account/_bulk?pretty' --data-binary "@accounts.json" >/dev/null
+usage/accounts.zip:
+	test -f accounts.zip || wget 'https://github.com/bly2k/files/blob/master/accounts.zip?raw=true' -O usage/accounts.zip
+usage/accounts.json: usage/accounts.zip
+	test -f usage/accounts.json || (cd usage/ && unzip accounts.zip)
+load_es_example_data: usage/accounts.json
+	curl -XPOST 'http://$(ip_elasticsearch):9200/bank/account/_bulk?pretty' --data-binary "@usage/accounts.json" >/dev/null
 show_es_indices:
 	curl 'http://$(ip_elasticsearch):9200/_cat/indices?v'
 
 # use FDW
 # =======
-create_extension:
-	$(psql) -c "CREATE EXTENSION IF NOT EXISTS multicorn;"
-create_server_es:
-	$(psql) < create_server.sql
-get_mapping_for_our_data:
-	docker exec $(container_elasticsearch) curl localhost:9200/bank/account/_mapping > mapping.json
-generate_foreign_table_create_statement:
-	cat mapping.json | docker exec -i $(compose_project_name)_postgres_1 python -m esfdw.mapping_to_schema -i bank -d account -s es > foreign_table.sql
+1_create_extension:
+	$(psql) < usage/1_create_extension.sql
+2_create_server_es:
+	$(psql) < usage/2_create_server.sql
+usage/mapping.json:
+	docker exec $(container_elasticsearch) curl localhost:9200/bank/account/_mapping > usage/mapping.json
+usage/3_foreign_table.sql: usage/mapping.json
+	cat usage/mapping.json | docker exec -i $(compose_project_name)_postgres_1 python -m esfdw.mapping_to_schema -i bank -d account -s es > usage/3_foreign_table.sql
 	# remove the last option line (column_name_translation)
-	perl -pe "s/\s+column_name_translation 'true'\n//; s/ index 'bank',/ index 'bank'/" -i foreign_table.sql
-create_foreign_table:
-	$(psql) < foreign_table.sql
-selects:
-	$(psql) < selects.sql
+	perl -pe "s/\s+column_name_translation 'true'\n//; s/ index 'bank',/ index 'bank'/" -i usage/3_foreign_table.sql
+3_create_foreign_table:
+	$(psql) < usage/3_foreign_table.sql
+4_selects:
+	$(psql) < usage/4_selects.sql
 
 readme:
 	rst2html.py README.rst > README.html
