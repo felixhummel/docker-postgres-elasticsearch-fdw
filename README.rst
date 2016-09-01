@@ -16,7 +16,7 @@ Run
 
     make
 
-Load some example data into elasticsearch at `/bank/account`::
+Load some example data into elasticsearch at ``/bank/account``::
 
     make load_es_example_data
     make show_es_indices
@@ -28,7 +28,7 @@ Then run the following in another terminal::
     make 3_create_foreign_table
     make 4_selects
 
-And check the contents of `usage/*.sql`.
+And check the contents of ``usage/*.sql``.
     
 
 .. vim: set ft=rst :
