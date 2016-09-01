@@ -4,5 +4,7 @@ services:
     build: .
     depends_on:
       - elasticsearch
+    environment:
+      POSTGRES_PASSWORD: foobarbaz
   elasticsearch:
     image: elasticsearch
