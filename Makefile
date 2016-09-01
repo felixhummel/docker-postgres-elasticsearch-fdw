@@ -14,5 +14,7 @@ pgpass:
 	chmod 600 ~/.pgpass
 check_python_version:
 	docker run -it --rm $(image_name) python -V | grep 'Python 2'
+debug:
+	docker run -it --rm $(image_name) bash
 readme:
 	rst2html.py README.rst > README.html
