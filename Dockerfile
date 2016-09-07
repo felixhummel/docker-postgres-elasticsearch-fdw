@@ -10,7 +10,7 @@ RUN apt-get update \
 
 # http://pgxnclient.projects.pgfoundry.org/install.html
 # http://elasticsearch-py.readthedocs.io/en/master/#compatibility
-RUN pip install pgxnclient 'elasticsearch>=2.0.0,<3.0.0'
+RUN pip install pgxnclient 'elasticsearch>=1.0.0,<2.0.0'
 
 # http://multicorn.org/#idid3
 RUN pgxn install multicorn
