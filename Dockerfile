@@ -14,6 +14,7 @@ RUN pip install pgxnclient 'elasticsearch>=2.0.0,<3.0.0'
 
 # http://multicorn.org/#idid3
 RUN pgxn install multicorn
+RUN pgxn install foreign_table_exposer
 
 ADD esfdw /tmp/esfdw
 
