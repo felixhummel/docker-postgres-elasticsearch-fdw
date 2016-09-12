@@ -1,0 +1,3 @@
+CREATE EXTENSION IF NOT EXISTS multicorn;
+CREATE EXTENSION IF NOT EXISTS foreign_table_exposer;
+

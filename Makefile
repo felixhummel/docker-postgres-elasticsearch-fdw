@@ -53,20 +53,8 @@ show_es_indices:
 
 # use FDW
 # =======
-1_create_extension:
-	$(psql) < usage/1_create_extension.sql
-2_create_server_es:
-	$(psql) < usage/2_create_server.sql
-usage/mapping.json:
-	docker exec $(container_elasticsearch) curl localhost:9200/bank/account/_mapping > usage/mapping.json
-usage/3_foreign_table.sql: usage/mapping.json
-	cat usage/mapping.json | docker exec -i $(compose_project_name)_postgres_1 python -m esfdw.mapping_to_schema -i bank -d account -s es > usage/3_foreign_table.sql
-	# remove the last option line (column_name_translation)
-	perl -pe "s/\s+column_name_translation 'true'\n//; s/ index 'bank',/ index 'bank'/" -i usage/3_foreign_table.sql
-3_create_foreign_table:
-	$(psql) < usage/3_foreign_table.sql
-4_selects:
-	$(psql) < usage/4_selects.sql
+selects:
+	$(psql) < usage/selects.sql
 
 readme:
 	rst2html.py README.rst > README.html

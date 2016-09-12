@@ -21,3 +21,4 @@ ADD esfdw /tmp/esfdw
 WORKDIR /tmp/esfdw
 RUN python setup.py install
 
+ADD docker-entrypoint-initdb.d/ /docker-entrypoint-initdb.d/
