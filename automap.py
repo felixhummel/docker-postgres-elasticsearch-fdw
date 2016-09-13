@@ -68,7 +68,7 @@ def main(host, postgres_server_name):
 if __name__ == '__main__':
     import argparse
 
-    parser = argparse.ArgumentParser(description='Process some integers.')
+    parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
             'elasticsearch_host',
             help='Elasticsearch host, e.g. "localhost:9200"'
