@@ -4,7 +4,7 @@ Elastic Search cluster.
 """
 from __future__ import print_function
 from elasticsearch import Elasticsearch
-from esfdw.mapping_to_schema import generate_table_spec
+from esfdw.mapping_to_schema import generate_table_spec, ColumnSpec
 
 
 def generate_schema(mapping, include_indices, include_doc_types, server, table_prefix):
@@ -21,7 +21,9 @@ def generate_schema(mapping, include_indices, include_doc_types, server, table_p
         cols = []
         for col in table_spec.columns:
             if col.data_type == 'geo_point':
-                pass  # ignore for now. fix when foo.lat / foo.lon are available as fields
+                # use .lat and .lon fields of location separately
+                cols.append(ColumnSpec('__'.join([col.column_name, 'lat']), 'double precision'))
+                cols.append(ColumnSpec('__'.join([col.column_name, 'lon']), 'double precision'))
             else:
                 cols.append(col)
         columns = ',\n'.join(
