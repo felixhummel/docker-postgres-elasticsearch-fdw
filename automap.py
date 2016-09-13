@@ -7,20 +7,27 @@ from elasticsearch import Elasticsearch
 from esfdw.mapping_to_schema import generate_table_spec
 
 
-def generate_schema(mapping, include_indices, include_doc_types, server, table_name):
+def generate_schema(mapping, include_indices, include_doc_types, server, table_prefix):
     """
     Column names with double quotes by default, to get around issues
     with reserved keywords.
 
-    Custom table names.
+    Custom table prefix.
 
     See esfdw.mapping_to_schema for more.
     """
     for table_spec in generate_table_spec(
             mapping, include_indices, include_doc_types):
+        cols = []
+        for col in table_spec.columns:
+            if col.data_type == 'geo_point':
+                pass  # ignore for now. fix when foo.lat / foo.lon are available as fields
+            else:
+                cols.append(col)
         columns = ',\n'.join(
             '    "%s" %s' %
-            (col.column_name, col.data_type) for col in table_spec.columns)
+            (col.column_name, col.data_type) for col in cols)
+        table_name = '_'.join([table_prefix, table_spec.index, table_spec.doc_type])
         yield \
             """DROP FOREIGN TABLE IF EXISTS %(table)s;
 CREATE FOREIGN TABLE %(table)s (
@@ -32,13 +39,6 @@ CREATE FOREIGN TABLE %(table)s (
 );
 """ % {'table': table_name, 'columns': columns, 'server': server,
        'doc_type': table_spec.doc_type, 'index': table_spec.index}
-
-
-def get_sql(mapping, index, doctype, server, table_prefix=''):
-    table_name = '_'.join((table_prefix, index, doctype))
-    lines = generate_schema(mapping, index, doctype, server, table_name)
-    sql = '\n'.join(lines)
-    return sql
 
 
 def iter_index_doctype_pairs(mapping):
@@ -60,7 +60,9 @@ def main(host, postgres_server_name):
 
     for index, doctype in iter_index_doctype_pairs(mapping):
         print('-- {0}/{1}'.format(index, doctype))
-        print(get_sql(mapping, index, doctype, postgres_server_name, table_prefix))
+        lines = generate_schema(mapping, index, doctype, postgres_server_name, table_prefix)
+        sql = '\n'.join(lines)
+        print(sql)
 
 
 if __name__ == '__main__':
