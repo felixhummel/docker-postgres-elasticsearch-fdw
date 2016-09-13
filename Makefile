@@ -57,7 +57,9 @@ selects:
 	$(psql) < usage/selects.sql
 
 automap:
-	docker exec -iu postgres $(container_postgres) python < automap.py | docker exec -iu postgres $(container_postgres) psql
+	docker exec -iu postgres $(container_postgres) \
+		python - elasticsearch:9200 es < automap.py \
+		| docker exec -iu postgres $(container_postgres) psql
 
 readme:
 	rst2html.py README.rst > README.html
