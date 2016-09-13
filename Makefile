@@ -56,5 +56,8 @@ show_es_indices:
 selects:
 	$(psql) < usage/selects.sql
 
+automap:
+	docker exec -iu postgres $(container_postgres) python < automap.py | docker exec -iu postgres $(container_postgres) psql
+
 readme:
 	rst2html.py README.rst > README.html
